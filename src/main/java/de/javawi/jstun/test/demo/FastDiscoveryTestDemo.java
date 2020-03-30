@@ -15,18 +15,20 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
+import de.javawi.jstun.test.DiscoveryInfo;
 import de.javawi.jstun.test.FastDiscoveryTest;
+import de.javawi.jstun.util.Utility;
+import org.slf4j.LoggerFactory;
 
 public class FastDiscoveryTestDemo implements Runnable {
+	static {
+		Utility.confLogging();
+	}
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FastDiscoveryTestDemo.class);
 	InetAddress iaddress;
 	int port;
-	
+
 	public FastDiscoveryTestDemo(InetAddress iaddress, int port) {
 		this.iaddress = iaddress;
 		this.port = port;
@@ -39,28 +41,19 @@ public class FastDiscoveryTestDemo implements Runnable {
 	
 	public void run() {
 		try {
-			FastDiscoveryTest test = new FastDiscoveryTest(iaddress, port, "jstun.javawi.de", 3478);
-			//DiscoveryTest test = new DiscoveryTest(iaddress, "stun.sipgate.net", 10000);
-			// iphone-stun.freenet.de:3478
-			// larry.gloo.net:3478
-			// stun.xten.net:3478
-			// stun.sipgate.net:10000
-			System.out.println(test.test());
+			FastDiscoveryTest test = new FastDiscoveryTest(iaddress, port, Utility.getStunServerName(), 3478);
+			DiscoveryInfo discoveryInfo = test.test();
+			LOGGER.info("Result of discovery {}", discoveryInfo);
+			LOGGER.info("Discovered public port is {}", discoveryInfo.getPublicPort());
 		} catch (BindException be) {
-			System.out.println(iaddress.toString() + ": " + be.getMessage());
+			LOGGER.info("BindException with " + iaddress.toString(), be);
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
+			LOGGER.error("Exception in run: ", e);
 		}
 	}
 	
 	public static void main(String args[]) {
 		try {
-			Handler fh = new FileHandler("logging.txt");
-			fh.setFormatter(new SimpleFormatter());
-			Logger.getLogger("de.javawi.jstun").addHandler(fh);
-			Logger.getLogger("de.javawi.jstun").setLevel(Level.ALL);
-			
 			Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
 			while (ifaces.hasMoreElements()) {
 				NetworkInterface iface = ifaces.nextElement();
@@ -76,7 +69,7 @@ public class FastDiscoveryTestDemo implements Runnable {
 				}
 			}
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			LOGGER.error("Exception in main: ", e);
 		}
 	}
 }

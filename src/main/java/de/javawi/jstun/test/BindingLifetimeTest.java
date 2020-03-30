@@ -61,6 +61,7 @@ public class BindingLifetimeTest {
 	}
 	
 	public void test() throws UtilityException, SocketException, UnknownHostException, IOException, MessageAttributeParsingException, MessageAttributeException, MessageHeaderParsingException {
+		LOGGER.debug("Using stun server '{}' for binding lifetime test", stunServer);
 		initialSocket = new DatagramSocket();
 		initialSocket.connect(InetAddress.getByName(stunServer), port);
 		initialSocket.setSoTimeout(timeout);

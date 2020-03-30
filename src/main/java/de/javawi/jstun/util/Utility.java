@@ -11,7 +11,46 @@
 
 package de.javawi.jstun.util;
 
+import de.javawi.jstun.test.demo.DiscoveryTestDemo;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.SimpleFormatter;
+
 public class Utility {
+    public static void confLogging() {
+		try {
+			Handler fh = new FileHandler("logging.txt");
+			fh.setFormatter(new SimpleFormatter());
+			java.util.logging.Logger.getLogger("de.javawi.jstun").addHandler(fh);
+			java.util.logging.Logger.getLogger("de.javawi.jstun").setLevel(Level.ALL);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static String getStunServerName() {
+    	final String STUN_SERVER_KEY = "stun.server.name";
+		String stunServerName = System.getProperty(STUN_SERVER_KEY, null);
+		return (stunServerName != null)
+				? stunServerName
+				: loadPropertiesFromResource().getProperty(STUN_SERVER_KEY);
+	}
+
+	private static Properties loadPropertiesFromResource() {
+		Properties properties = new Properties();
+		try (InputStream stream = DiscoveryTestDemo.class.getClassLoader().
+				getResourceAsStream("jstun.properties")) {
+			properties.load(stream);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return properties;
+    }
 
 	public static final byte integerToOneByte(int value) throws UtilityException {
 		if ((value > Math.pow(2,15)) || (value < 0)) {

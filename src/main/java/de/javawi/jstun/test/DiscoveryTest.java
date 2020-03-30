@@ -55,6 +55,7 @@ public class DiscoveryTest {
 	}
 		
 	public DiscoveryInfo test() throws UtilityException, SocketException, UnknownHostException, IOException, MessageAttributeParsingException, MessageAttributeException, MessageHeaderParsingException{
+		LOGGER.debug("Using stun server '{}' for discovery", stunServer);
 		ma = null;
 		ca = null;
 		nodeNatted = true;
@@ -68,9 +69,9 @@ public class DiscoveryTest {
 				}
 			}
 		}
-		
+
 		socketTest1.close();
-		
+
 		return di;
 	}
 	
@@ -141,7 +142,7 @@ public class DiscoveryTest {
 					LOGGER.debug("Node is not capable of UDP communication.");
 					return false;
 				}
-			} 
+			}
 		}
 	}
 		

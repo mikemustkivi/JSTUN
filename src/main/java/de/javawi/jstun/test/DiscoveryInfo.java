@@ -157,6 +157,12 @@ public class DiscoveryInfo {
 			sb.append("unknown");
 		}
 		sb.append("\n");
+		sb.append("Public port: ");
+		if (publicPort != -1) {
+			sb.append(publicPort);
+		} else {
+			sb.append("unknown");
+		}
 		return sb.toString();
 	}	
 }

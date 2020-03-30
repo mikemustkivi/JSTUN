@@ -60,6 +60,7 @@ public class FastDiscoveryTest {
 	}
 		
 	public DiscoveryInfo test() throws UtilityException, SocketException, UnknownHostException, IOException, MessageAttributeParsingException, MessageAttributeException, MessageHeaderParsingException{
+		LOGGER.debug("Using stun server '{}' for fast discovery", stunServer);
 		ma = null;
 		ca = null;
 		nodeNatted = true;
