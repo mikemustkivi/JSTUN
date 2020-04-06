@@ -22,9 +22,12 @@ public class AllDiscoveryRunnerDemo {
                 while (iaddresses.hasMoreElements()) {
                     InetAddress iaddress = iaddresses.nextElement();
                     if (Class.forName("java.net.Inet4Address").isInstance(iaddress)) {
-                        if ((!iaddress.isLoopbackAddress()) && (!iaddress.isLinkLocalAddress())) {
-                            runDiscovery(new FastDiscoveryTestDemo(iaddress));
-                            runDiscovery(new DiscoveryTestDemo(iaddress));
+                        String localHostAddress = iaddress.getHostAddress();
+                        if ((!iaddress.isLoopbackAddress()) && (!iaddress.isLinkLocalAddress()
+                            && !localHostAddress.startsWith("10."))) {
+                            runDiscovery(new PublicPortDiscoveryTestDemo(iaddress));
+//                            runDiscovery(new FastDiscoveryTestDemo(iaddress));
+//                            runDiscovery(new DiscoveryTestDemo(iaddress));
                         }
                     }
                 }
