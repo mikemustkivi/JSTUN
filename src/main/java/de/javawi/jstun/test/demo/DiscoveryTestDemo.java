@@ -11,11 +11,11 @@
 
 package de.javawi.jstun.test.demo;
 
+import de.javawi.jstun.logging.Logger;
+import de.javawi.jstun.logging.LoggerFactory;
 import de.javawi.jstun.test.DiscoveryInfo;
 import de.javawi.jstun.test.DiscoveryTest;
 import de.javawi.jstun.util.Utility;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.BindException;
 import java.net.InetAddress;

@@ -16,16 +16,17 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 
+import de.javawi.jstun.logging.Logger;
+import de.javawi.jstun.logging.LoggerFactory;
 import de.javawi.jstun.test.DiscoveryInfo;
 import de.javawi.jstun.test.FastDiscoveryTest;
 import de.javawi.jstun.util.Utility;
-import org.slf4j.LoggerFactory;
 
 public class FastDiscoveryTestDemo implements Runnable {
 	static {
 		Utility.confLogging();
 	}
-	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FastDiscoveryTestDemo.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(FastDiscoveryTestDemo.class);
 	InetAddress iaddress;
 	int port;
 

@@ -21,9 +21,6 @@ import java.net.UnknownHostException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.javawi.jstun.attribute.ChangeRequest;
 import de.javawi.jstun.attribute.ErrorCode;
 import de.javawi.jstun.attribute.MappedAddress;
@@ -33,6 +30,8 @@ import de.javawi.jstun.attribute.MessageAttributeParsingException;
 import de.javawi.jstun.attribute.ResponseAddress;
 import de.javawi.jstun.header.MessageHeader;
 import de.javawi.jstun.header.MessageHeaderParsingException;
+import de.javawi.jstun.logging.Logger;
+import de.javawi.jstun.logging.LoggerFactory;
 import de.javawi.jstun.util.UtilityException;
 
 public class BindingLifetimeTest {

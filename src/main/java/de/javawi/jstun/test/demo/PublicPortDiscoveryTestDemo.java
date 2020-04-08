@@ -14,7 +14,8 @@ package de.javawi.jstun.test.demo;
 import de.javawi.jstun.test.DiscoveryInfo;
 import de.javawi.jstun.test.PublicPortDiscoveryTest;
 import de.javawi.jstun.util.Utility;
-import org.slf4j.LoggerFactory;
+import de.javawi.jstun.logging.LoggerFactory;
+import de.javawi.jstun.logging.Logger;
 
 import java.net.BindException;
 import java.net.InetAddress;
@@ -25,7 +26,7 @@ public class PublicPortDiscoveryTestDemo implements Runnable {
 	static {
 		Utility.confLogging();
 	}
-	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PublicPortDiscoveryTestDemo.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(PublicPortDiscoveryTestDemo.class);
 	InetAddress iaddress;
 	int port;
 

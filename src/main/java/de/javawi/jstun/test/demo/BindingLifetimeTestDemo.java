@@ -11,10 +11,10 @@
 
 package de.javawi.jstun.test.demo;
 
+import de.javawi.jstun.logging.Logger;
+import de.javawi.jstun.logging.LoggerFactory;
 import de.javawi.jstun.test.BindingLifetimeTest;
 import de.javawi.jstun.util.Utility;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BindingLifetimeTestDemo {
     static {

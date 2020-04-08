@@ -11,9 +11,8 @@
 
 package de.javawi.jstun.attribute;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import de.javawi.jstun.logging.Logger;
+import de.javawi.jstun.logging.LoggerFactory;
 
 public class SourceAddress extends MappedResponseChangedSourceAddressReflectedFrom {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SourceAddress.class);

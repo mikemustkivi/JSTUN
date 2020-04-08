@@ -1,7 +1,8 @@
 package de.javawi.jstun.test.demo;
 
+import de.javawi.jstun.logging.Logger;
+import de.javawi.jstun.logging.LoggerFactory;
 import de.javawi.jstun.util.Utility;
-import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -11,7 +12,7 @@ public class AllDiscoveryRunnerDemo {
     static {
         Utility.confLogging();
     }
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AllDiscoveryRunnerDemo.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AllDiscoveryRunnerDemo.class);
 
     public static void main(String args[]) {
         try {

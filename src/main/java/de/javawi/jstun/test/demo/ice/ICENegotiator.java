@@ -23,11 +23,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.javawi.jstun.attribute.MessageAttributeException;
 import de.javawi.jstun.header.MessageHeaderParsingException;
+import de.javawi.jstun.logging.Logger;
+import de.javawi.jstun.logging.LoggerFactory;
 import de.javawi.jstun.test.DiscoveryInfo;
 import de.javawi.jstun.test.DiscoveryTest;
 import de.javawi.jstun.test.demo.ice.Candidate.CandidateType;
