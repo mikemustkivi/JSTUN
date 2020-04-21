@@ -13,11 +13,9 @@ package de.javawi.jstun.test.demo;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.SimpleFormatter;
 
 import de.javawi.jstun.attribute.ChangeRequest;
 import de.javawi.jstun.attribute.ChangedAddress;
@@ -43,15 +41,24 @@ import de.javawi.jstun.util.UtilityException;
  */
 public class StunServer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(StunServer.class);
+	private static int requestCount = 0;
+	private static Map<Integer,Integer> timeoutMap = new HashMap<>();
+	static {
+		//int timeouts[] = new int[] { 0, 100, 300, 700, 1500, 3100, 4700, 6300, 7900, 9500};
+		int timeouts[] = new int[] { 0 };
+		for (int index=0; index < timeouts.length; index++) {
+			timeoutMap.put(index, timeouts[index]);
+		}
+	}
 	Vector<DatagramSocket> sockets;
 	private boolean doRun;
 	
-	public StunServer(int primaryPort, InetAddress primary, int secondaryPort, InetAddress secondary) throws SocketException {
+	public StunServer(int primaryPort, InetAddress primary /*, int secondaryPort, InetAddress secondary */) throws SocketException {
 		sockets = new Vector<DatagramSocket>();
 		sockets.add(new DatagramSocket(primaryPort, primary));
-		sockets.add(new DatagramSocket(secondaryPort, primary));
-		sockets.add(new DatagramSocket(primaryPort, secondary));
-		sockets.add(new DatagramSocket(secondaryPort, secondary));
+//		sockets.add(new DatagramSocket(secondaryPort, primary));
+//		sockets.add(new DatagramSocket(primaryPort, secondary));
+//		sockets.add(new DatagramSocket(secondaryPort, secondary));
 	}
 	
 	public void start() throws SocketException {
@@ -89,30 +96,32 @@ public class StunServer {
 	 */
 	class StunServerReceiverThread extends Thread {
 		private DatagramSocket receiverSocket;
-		private DatagramSocket changedPort;
-		private DatagramSocket changedIP;
-		private DatagramSocket changedPortIP;
+//		private DatagramSocket changedPort;
+//		private DatagramSocket changedIP;
+//		private DatagramSocket changedPortIP;
 		
 		StunServerReceiverThread(DatagramSocket datagramSocket) {
 			this.receiverSocket = datagramSocket;
-			for (DatagramSocket socket : sockets) {
-				if ((socket.getLocalPort() != receiverSocket.getLocalPort()) &&
-					(socket.getLocalAddress().equals(receiverSocket.getLocalAddress())))
-					changedPort = socket;
-				if ((socket.getLocalPort() == receiverSocket.getLocalPort()) &&
-					(!socket.getLocalAddress().equals(receiverSocket.getLocalAddress())))
-					changedIP = socket;
-				if ((socket.getLocalPort() != receiverSocket.getLocalPort()) &&
-					(!socket.getLocalAddress().equals(receiverSocket.getLocalAddress())))
-					changedPortIP = socket;
-			}
+//			for (DatagramSocket socket : sockets) {
+//				if ((socket.getLocalPort() != receiverSocket.getLocalPort()) &&
+//					(socket.getLocalAddress().equals(receiverSocket.getLocalAddress())))
+//					changedPort = socket;
+//				if ((socket.getLocalPort() == receiverSocket.getLocalPort()) &&
+//					(!socket.getLocalAddress().equals(receiverSocket.getLocalAddress())))
+//					changedIP = socket;
+//				if ((socket.getLocalPort() != receiverSocket.getLocalPort()) &&
+//					(!socket.getLocalAddress().equals(receiverSocket.getLocalAddress())))
+//					changedPortIP = socket;
+//			}
 		}
 		
 		public void run() {
 			while (doRun) {
 				try {
+				    long start = System.currentTimeMillis();
 					DatagramPacket receive = new DatagramPacket(new byte[200], 200);
 					receiverSocket.receive(receive);
+					LOGGER.debug("================================================================================");
 					LOGGER.debug(receiverSocket.getLocalAddress().getHostAddress() + ":" + receiverSocket.getLocalPort() + " datagram received from " + receive.getAddress().getHostAddress() + ":" + receive.getPort());
 					MessageHeader receiveMH = MessageHeader.parseHeader(receive.getData()); 
 					try {
@@ -133,45 +142,47 @@ public class StunServer {
 							sendMH.addMessageAttribute(ma);
 							// Changed address attribute
 							ChangedAddress ca = new ChangedAddress();
-							ca.setAddress(new Address(changedPortIP.getLocalAddress().getAddress()));
-							ca.setPort(changedPortIP.getLocalPort());
+							ca.setAddress(new Address(receiverSocket.getLocalAddress().getAddress()));
+							ca.setPort(receiverSocket.getLocalPort());
 							sendMH.addMessageAttribute(ca);
 							if (cr.isChangePort() && (!cr.isChangeIP())) {
 								LOGGER.debug("Change port received in Change Request attribute");
 								// Source address attribute
-								SourceAddress sa = new SourceAddress();
-								sa.setAddress(new Address(changedPort.getLocalAddress().getAddress()));
-								sa.setPort(changedPort.getLocalPort());
-								sendMH.addMessageAttribute(sa);
-								byte[] data = sendMH.getBytes();
-								DatagramPacket send = new DatagramPacket(data, data.length);
-								if (ra != null) {
-									send.setPort(ra.getPort());
-									send.setAddress(ra.getAddress().getInetAddress());
-								} else {
-									send.setPort(receive.getPort());
-									send.setAddress(receive.getAddress());
-								}
-								changedPort.send(send);
-								LOGGER.debug(changedPort.getLocalAddress().getHostAddress() + ":" + changedPort.getLocalPort() + " send Binding Response to " + send.getAddress().getHostAddress() + ":" + send.getPort());
+								LOGGER.debug("not implemented, skipping");
+//								SourceAddress sa = new SourceAddress();
+//								sa.setAddress(new Address(changedPort.getLocalAddress().getAddress()));
+//								sa.setPort(changedPort.getLocalPort());
+//								sendMH.addMessageAttribute(sa);
+//								byte[] data = sendMH.getBytes();
+//								DatagramPacket send = new DatagramPacket(data, data.length);
+//								if (ra != null) {
+//									send.setPort(ra.getPort());
+//									send.setAddress(ra.getAddress().getInetAddress());
+//								} else {
+//									send.setPort(receive.getPort());
+//									send.setAddress(receive.getAddress());
+//								}
+//								changedPort.send(send);
+//								LOGGER.debug(changedPort.getLocalAddress().getHostAddress() + ":" + changedPort.getLocalPort() + " send Binding Response to " + send.getAddress().getHostAddress() + ":" + send.getPort());
 							} else if ((!cr.isChangePort()) && cr.isChangeIP()) {
 								LOGGER.debug("Change ip received in Change Request attribute");
 								// Source address attribute
-								SourceAddress sa = new SourceAddress();
-								sa.setAddress(new Address(changedIP.getLocalAddress().getAddress()));
-								sa.setPort(changedIP.getLocalPort());
-								sendMH.addMessageAttribute(sa);
-								byte[] data = sendMH.getBytes();
-								DatagramPacket send = new DatagramPacket(data, data.length);
-								if (ra != null) {
-									send.setPort(ra.getPort());
-									send.setAddress(ra.getAddress().getInetAddress());
-								} else {
-									send.setPort(receive.getPort());
-									send.setAddress(receive.getAddress());
-								}
-								changedIP.send(send);
-								LOGGER.debug(changedIP.getLocalAddress().getHostAddress() + ":" + changedIP.getLocalPort() + " send Binding Response to " + send.getAddress().getHostAddress() + ":" + send.getPort());
+								LOGGER.debug("not implemented, skipping");
+//								SourceAddress sa = new SourceAddress();
+//								sa.setAddress(new Address(changedIP.getLocalAddress().getAddress()));
+//								sa.setPort(changedIP.getLocalPort());
+//								sendMH.addMessageAttribute(sa);
+//								byte[] data = sendMH.getBytes();
+//								DatagramPacket send = new DatagramPacket(data, data.length);
+//								if (ra != null) {
+//									send.setPort(ra.getPort());
+//									send.setAddress(ra.getAddress().getInetAddress());
+//								} else {
+//									send.setPort(receive.getPort());
+//									send.setAddress(receive.getAddress());
+//								}
+//								changedIP.send(send);
+//								LOGGER.debug(changedIP.getLocalAddress().getHostAddress() + ":" + changedIP.getLocalPort() + " send Binding Response to " + send.getAddress().getHostAddress() + ":" + send.getPort());
 							} else if ((!cr.isChangePort()) && (!cr.isChangeIP())) {
 								LOGGER.debug("Nothing received in Change Request attribute");
 								// Source address attribute
@@ -188,26 +199,29 @@ public class StunServer {
 									send.setPort(receive.getPort());
 									send.setAddress(receive.getAddress());
 								}
+								waitInMs(getWaitTime(requestCount++, true));
 								receiverSocket.send(send);
 								LOGGER.debug(receiverSocket.getLocalAddress().getHostAddress() + ":" + receiverSocket.getLocalPort() + " send Binding Response to " + send.getAddress().getHostAddress() + ":" + send.getPort());
+								LOGGER.debug("sending back response in {} ms", System.currentTimeMillis() - start);
 							} else if (cr.isChangePort() && cr.isChangeIP()) {
 								LOGGER.debug("Change port and ip received in Change Request attribute");
 								// Source address attribute
-								SourceAddress sa = new SourceAddress();
-								sa.setAddress(new Address(changedPortIP.getLocalAddress().getAddress()));
-								sa.setPort(changedPortIP.getLocalPort());
-								sendMH.addMessageAttribute(sa);
-								byte[] data = sendMH.getBytes();
-								DatagramPacket send = new DatagramPacket(data, data.length);
-								if (ra != null) {
-									send.setPort(ra.getPort());
-									send.setAddress(ra.getAddress().getInetAddress());
-								} else {
-									send.setPort(receive.getPort());
-									send.setAddress(receive.getAddress());
-								}
-								changedPortIP.send(send);
-								LOGGER.debug(changedPortIP.getLocalAddress().getHostAddress() + ":" + changedPortIP.getLocalPort() + " send Binding Response to " + send.getAddress().getHostAddress() + ":" + send.getPort());
+								LOGGER.debug("not implemented, skipping");
+//								SourceAddress sa = new SourceAddress();
+//								sa.setAddress(new Address(changedPortIP.getLocalAddress().getAddress()));
+//								sa.setPort(changedPortIP.getLocalPort());
+//								sendMH.addMessageAttribute(sa);
+//								byte[] data = sendMH.getBytes();
+//								DatagramPacket send = new DatagramPacket(data, data.length);
+//								if (ra != null) {
+//									send.setPort(ra.getPort());
+//									send.setAddress(ra.getAddress().getInetAddress());
+//								} else {
+//									send.setPort(receive.getPort());
+//									send.setAddress(receive.getAddress());
+//								}
+//								changedPortIP.send(send);
+//								LOGGER.debug(changedPortIP.getLocalAddress().getHostAddress() + ":" + changedPortIP.getLocalPort() + " send Binding Response to " + send.getAddress().getHostAddress() + ":" + send.getPort());
 							}
 						}
 					} catch (UnknownMessageAttributeException umae) {
@@ -226,48 +240,80 @@ public class StunServer {
 						send.setPort(receive.getPort());
 						send.setAddress(receive.getAddress());
 						receiverSocket.send(send);
-						LOGGER.debug(changedPortIP.getLocalAddress().getHostAddress() + ":" + changedPortIP.getLocalPort() + " send Binding Error Response to " + send.getAddress().getHostAddress() + ":" + send.getPort());
+//						LOGGER.debug(changedPortIP.getLocalAddress().getHostAddress() + ":" + changedPortIP.getLocalPort() + " send Binding Error Response to " + send.getAddress().getHostAddress() + ":" + send.getPort());
 					}
 				} catch (SocketTimeoutException ioe) {
 					// No data for SO_TIMEOUT milliseconds.
+					// LOGGER.error("SocketTimeoutException", ioe);
 				} catch (IOException ioe) {
+					LOGGER.error("IOException", ioe);
 					ioe.printStackTrace();
 				} catch (MessageAttributeParsingException mape) {
+					LOGGER.error("MessageAttributeParsingException", mape);
 					mape.printStackTrace();
 				} catch (MessageAttributeException mae) {
+					LOGGER.error("MessageAttributeException", mae);
 					mae.printStackTrace();
 				} catch (MessageHeaderParsingException mhpe) {
+					LOGGER.error("MessageHeaderParsingException", mhpe);
 					mhpe.printStackTrace();
 				} catch (UtilityException ue) {
+					LOGGER.error("UtilityException", ue);
 					ue.printStackTrace();
 				} catch (ArrayIndexOutOfBoundsException aioobe) {
+					LOGGER.error("ArrayIndexOutOfBoundsException", aioobe);
 					aioobe.printStackTrace();
 				}
 			}
+			LOGGER.debug("closing socket");
 			receiverSocket.close();
 		}
+
+		private int getWaitTime(int count, boolean alwaysWait) {
+//			LOGGER.debug("getWaitTime: count:{}", count);
+			if (alwaysWait) {
+				return nextWaitTime(count);
+			}
+			if (count % 2 == 0) {
+				return nextWaitTime(count/2);
+			} else {
+				return 0;
+			}
+		}
+
+		private int nextWaitTime(int count) {
+			int result =  timeoutMap.getOrDefault(count % timeoutMap.size(), 0);
+			LOGGER.debug("getWaitTime: wait {} ms [count:{}, timeoutMap.size():{}]",
+					result, count, timeoutMap.size());
+			return result;
+		}
+
+		private void waitInMs(long waitInMs) {
+			LOGGER.debug("wait {} ms", waitInMs);
+			try {
+				Thread.sleep(waitInMs);
+			} catch (InterruptedException e) {
+			    // skip
+			}
+		}
 	}
-	
+
 	/*
 	 * To invoke the STUN server two IP addresses and two ports are required.
 	 */
 	public static void main(String args[]) {
 		try {
-			if (args.length != 4) {
+			if (args.length != 2) {
 				System.out.println("usage: java de.javawi.jstun.test.demo.StunServer PORT1 IP1 PORT2 IP2");
 				System.out.println();
 				System.out.println(" PORT1 - the first port that should be used by the server");
 				System.out.println("   IP1 - the first ip address that should be used by the server");
-				System.out.println(" PORT2 - the second port that should be used by the server");
-				System.out.println("   IP2 - the second ip address that should be used by the server");
+//				System.out.println(" PORT2 - the second port that should be used by the server");
+//				System.out.println("   IP2 - the second ip address that should be used by the server");
 				System.exit(0);
 			}
-			Handler fh = new FileHandler("logging_server.txt");
-			fh.setFormatter(new SimpleFormatter());
-			java.util.logging.Logger.getLogger("de.javawi.jstun").addHandler(fh);
-			java.util.logging.Logger.getLogger("de.javawi.jstun").setLevel(Level.ALL);
-			StunServer ss = new StunServer(Integer.parseInt(args[0]), InetAddress.getByName(args[1]),
-										   Integer.parseInt(args[2]), InetAddress.getByName(args[3]));
+			StunServer ss = new StunServer(Integer.parseInt(args[0]), InetAddress.getByName(args[1]));
+			//							   Integer.parseInt(args[2]), InetAddress.getByName(args[3]));
 			ss.start();
 		} catch (SocketException se) {
 			se.printStackTrace();

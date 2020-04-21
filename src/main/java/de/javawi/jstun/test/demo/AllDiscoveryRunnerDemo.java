@@ -6,7 +6,10 @@ import de.javawi.jstun.util.Utility;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 public class AllDiscoveryRunnerDemo {
     static {
@@ -15,26 +18,50 @@ public class AllDiscoveryRunnerDemo {
     private static final Logger LOGGER = LoggerFactory.getLogger(AllDiscoveryRunnerDemo.class);
 
     public static void main(String args[]) {
+        while (true) {
+            discover();
+            waitInMs(500);
+        }
+    }
+
+    private static void discover() {
         try {
-            Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
-            while (ifaces.hasMoreElements()) {
-                NetworkInterface iface = ifaces.nextElement();
-                Enumeration<InetAddress> iaddresses = iface.getInetAddresses();
-                while (iaddresses.hasMoreElements()) {
-                    InetAddress iaddress = iaddresses.nextElement();
-                    if (Class.forName("java.net.Inet4Address").isInstance(iaddress)) {
-                        String localHostAddress = iaddress.getHostAddress();
-                        if ((!iaddress.isLoopbackAddress()) && (!iaddress.isLinkLocalAddress()
-                            && !localHostAddress.startsWith("10."))) {
-                            runDiscovery(new PublicPortDiscoveryTestDemo(iaddress));
-//                            runDiscovery(new FastDiscoveryTestDemo(iaddress));
-//                            runDiscovery(new DiscoveryTestDemo(iaddress));
-                        }
-                    }
-                }
+            for (InetAddress iaddress : getInetAddressList()) {
+                runDiscovery(new PublicPortDiscoveryTestDemo(iaddress));
             }
         } catch (Exception e) {
             LOGGER.error("Exception in main: ", e);
+        }
+    }
+
+    private static List<InetAddress> getInetAddressList() throws SocketException, ClassNotFoundException {
+        List<InetAddress> inetAddressList = new ArrayList<>();
+        Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+        while (ifaces.hasMoreElements()) {
+            NetworkInterface iface = ifaces.nextElement();
+            Enumeration<InetAddress> iaddresses = iface.getInetAddresses();
+            while (iaddresses.hasMoreElements()) {
+                InetAddress iaddress = iaddresses.nextElement();
+                if (Class.forName("java.net.Inet4Address").isInstance(iaddress)) {
+                    String localHostAddress = iaddress.getHostAddress();
+                    LOGGER.debug("local host aadress {} interface name {}", localHostAddress,
+                            NetworkInterface.getByInetAddress(iaddress).getName());
+                    if ((!iaddress.isLoopbackAddress()) && (!iaddress.isLinkLocalAddress()) &&
+                            NetworkInterface.getByInetAddress(iaddress).getName().toLowerCase().startsWith("en")) {
+                        inetAddressList.add(iaddress);
+                    }
+                }
+            }
+        }
+        return inetAddressList;
+    }
+
+    private static void waitInMs(long waitInMs) {
+        LOGGER.debug("wait {} ms", waitInMs);
+        try {
+            Thread.sleep(waitInMs);
+        } catch (InterruptedException e) {
+            // skip
         }
     }
 

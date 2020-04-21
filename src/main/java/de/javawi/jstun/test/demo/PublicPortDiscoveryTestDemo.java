@@ -17,7 +17,6 @@ import de.javawi.jstun.util.Utility;
 import de.javawi.jstun.logging.LoggerFactory;
 import de.javawi.jstun.logging.Logger;
 
-import java.net.BindException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
@@ -46,8 +45,6 @@ public class PublicPortDiscoveryTestDemo implements Runnable {
 			DiscoveryInfo discoveryInfo = test.test();
 			LOGGER.info("Result of discovery {}", discoveryInfo);
 			LOGGER.info("Discovered public port is {}", discoveryInfo.getPublicPort());
-		} catch (BindException be) {
-			LOGGER.info("BindException with " + iaddress.toString(), be);
 		} catch (Exception e) {
 			LOGGER.error("Exception in run: ", e);
 		}
